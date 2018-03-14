@@ -1,0 +1,30 @@
+{
+  "name": "@dboxjs/leaflet",
+  "version": "0.0.1",
+  "description": "dboxjs leaflet",
+  "main": "leaflet.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dboxjs/leaflet.git"
+  },
+  "keywords": [
+    "d3",
+    "dboxjs",
+    "dbox",
+    "leaflet",
+    "charts"
+  ],
+  "author": "alecs.garza@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dboxjs/leaflet/issues"
+  },
+  "homepage": "https://github.com/dboxjs/leaflet#readme",
+  "devDependencies": {
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.0"
+  }
+}
