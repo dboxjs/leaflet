@@ -44,7 +44,6 @@ export default function(config,helper) {
 
   Leaflet.scales = function(){
     var vm = this; 
-
     return vm
   }
   
@@ -116,25 +115,11 @@ export default function(config,helper) {
     }
 
     function enterLayer(){
-      var countryName = this.feature.properties.name;
-      debugger;
-      $countryName.text(countryName).show();
       
-      this.bringToFront();
-      this.setStyle({
-        weight:2,
-        opacity: 1
-      });
     }
 
     function leaveLayer(){
-      $countryName.hide();
-
-      this.bringToBack();
-      this.setStyle({
-        weight:1,
-        opacity:.5
-      });
+      
     }
 
     return vm
