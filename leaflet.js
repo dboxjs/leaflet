@@ -29,6 +29,12 @@ export default function (config, helper) {
     return vm
   }
 
+  Leaflet.opacity = function (value) {
+    var vm = this;
+    vm._config.opacity = value;
+    return vm;
+  }
+
   Leaflet.colors = function (colors) {
     var vm = this;
     if (colors && Array.isArray(colors)) {
@@ -62,12 +68,16 @@ export default function (config, helper) {
       for (let idx = 0; idx < objects.length; idx++) {
         const obj = objects[idx];
         vm._topojson.objects[obj].geometries.forEach(function (geom) {
-          geom.properties[vm._config.fill] = Math.random() * vm._minMax[1] + vm._minMax[0];
+          var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
+          if (found)
+            geom.properties[vm._config.fill] = found[vm._config.fill];
         });
       }
     } else if (objects) {
       vm._topojson.objects[objects].geometries.forEach(function (geom) {
-        geom.properties[vm._config.fill] = Math.random() * vm._minMax[1] + vm._minMax[0];
+        var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
+        if (found)
+          geom.properties[vm._config.fill] = found[vm._config.fill];
       });
     }
 
@@ -145,7 +155,7 @@ export default function (config, helper) {
 
       layer.setStyle({
         fillColor: fillColor,
-        fillOpacity: 1,
+        fillOpacity: vm._config.opacity || 0.7,
         color: '#555',
         weight: 1,
         opacity: .5
@@ -167,8 +177,6 @@ export default function (config, helper) {
 
     return vm
   }
-
-
 
   Leaflet.init(config);
 
