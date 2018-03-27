@@ -150,21 +150,28 @@ export default function (config, helper) {
     }
 
     function handleLayer(layer) {
+      
       var value = layer.feature.properties[vm._config.fill];
-      var fillColor = vm._scales.color(value);
+      if (!value) {
+        // Remove polygons without data
+        /** @todo validate what to do with NA's */
+        d3.select(layer._path).remove();
+      } else {
+        var fillColor = vm._scales.color(value);
 
-      layer.setStyle({
-        fillColor: fillColor,
-        fillOpacity: vm._config.opacity || 0.7,
-        color: '#555',
-        weight: 1,
-        opacity: .5
-      });
+        layer.setStyle({
+          fillColor: fillColor,
+          fillOpacity: vm._config.opacity || 0.7,
+          color: '#555',
+          weight: 1,
+          opacity: .5
+        });
 
-      layer.on({
-        mouseover: enterLayer,
-        mouseout: leaveLayer
-      });
+        layer.on({
+          mouseover: enterLayer,
+          mouseout: leaveLayer
+        });
+      }
     }
 
     function enterLayer() {
