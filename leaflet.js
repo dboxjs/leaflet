@@ -12,6 +12,9 @@ export default function (config, helper) {
     vm._scales = {};
     vm._axes = {};
     vm._data = [];
+
+    vm._scales.color = d3.scaleQuantize().range(["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"
+    ]);
   }
 
   Leaflet.id = function (col) {
@@ -20,6 +23,21 @@ export default function (config, helper) {
     return vm;
   }
 
+  Leaflet.fill = function (col) {
+    var vm = this;
+    vm._config.fill = col;
+    return vm
+  }
+
+  Leaflet.colors = function (colors) {
+    var vm = this;
+    if (colors && Array.isArray(colors)) {
+      vm._scales.color.range(colors);
+    } else if (typeof colors === 'function') {
+      vm._scales.color = colors;
+    }
+    return vm;
+  }
 
   //-------------------------------
   //Triggered by the chart.js;
@@ -35,7 +53,23 @@ export default function (config, helper) {
 
     vm._data = data;
     //vm._quantiles = vm._setQuantile(data);
-    //vm._minMax = d3.extent(data, function(d) { return +d[vm._config.color]; })
+    vm._minMax = d3.extent(data, function(d) { return +d[vm._config.fill]; })
+
+    vm._scales.color.domain(vm._minMax);
+
+    var objects = vm._config.map.topojson.objects;
+    if (Array.isArray(objects)) {
+      for (let idx = 0; idx < objects.length; idx++) {
+        const obj = objects[idx];
+        vm._topojson.objects[obj].geometries.forEach(function (geom) {
+          geom.properties[vm._config.fill] = Math.random() * vm._minMax[1] + vm._minMax[0];
+        });
+      }
+    } else if (objects) {
+      vm._topojson.objects[objects].geometries.forEach(function (geom) {
+        geom.properties[vm._config.fill] = Math.random() * vm._minMax[1] + vm._minMax[0];
+      });
+    }
 
     //vm._config.map.min = vm._minMax[0];
     //vm._config.map.max = vm._minMax[1];
@@ -62,15 +96,22 @@ export default function (config, helper) {
         var geojson, key;
         if (jsonData.type === 'Topology') {
           if (objects) {
-            geojson = topojson.feature(jsonData, jsonData.objects[objects]);
-            L.GeoJSON.prototype.addData.call(this, geojson);
+            if (Array.isArray(objects)) {
+              for (let idx = 0; idx < objects.length; idx++) {
+                const obj = objects[idx];
+                geojson = topojson.feature(jsonData, jsonData.objects[obj]);
+                L.GeoJSON.prototype.addData.call(this, geojson);
+              }
+            } else {
+              geojson = topojson.feature(jsonData, jsonData.objects[objects]);
+              L.GeoJSON.prototype.addData.call(this, geojson);
+            }
           } else {
             for (key in jsonData.objects) {
               geojson = topojson.feature(jsonData, jsonData.objects[key]);
               L.GeoJSON.prototype.addData.call(this, geojson);
             }
           }
-
         } else {
           L.GeoJSON.prototype.addData.call(this, jsonData);
         }
@@ -99,8 +140,8 @@ export default function (config, helper) {
     }
 
     function handleLayer(layer) {
-      var randomValue = Math.random(),
-        fillColor = '#ff0000'; //colorScale(randomValue).hex();
+      var value = layer.feature.properties[vm._config.fill];
+      var fillColor = vm._scales.color(value);
 
       layer.setStyle({
         fillColor: fillColor,
