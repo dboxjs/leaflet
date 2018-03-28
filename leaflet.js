@@ -64,13 +64,16 @@ export default function (config, helper) {
     vm._scales.color.domain(vm._minMax);
 
     var objects = vm._config.map.topojson.objects;
+
+    vm._nodes = [];
     if (Array.isArray(objects)) {
       for (let idx = 0; idx < objects.length; idx++) {
         const obj = objects[idx];
         vm._topojson.objects[obj].geometries.forEach(function (geom) {
           var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
-          if (found)
+          if (found) 
             geom.properties[vm._config.fill] = found[vm._config.fill];
+          vm._nodes.push(geom);
         });
       }
     } else if (objects) {
@@ -78,6 +81,7 @@ export default function (config, helper) {
         var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
         if (found)
           geom.properties[vm._config.fill] = found[vm._config.fill];
+        vm._nodes.push(geom);
       });
     }
 
@@ -129,8 +133,8 @@ export default function (config, helper) {
     });
 
     var map = new L.Map(vm._config.bindTo, {
-        center: new L.LatLng(22.2970632, -101.8634038),
-        zoom: 5,
+        center: new L.LatLng(25.5629994, -100.6405644),
+        zoom: 7,
         maxZoom: 10,
         minZoom: 3
       }),
@@ -175,13 +179,22 @@ export default function (config, helper) {
     }
 
     function enterLayer() {
-
+      console.log(layer, this);
     }
 
     function leaveLayer() {
 
     }
 
+    /**
+     * Draw Legend
+     */
+    console.log(vm._nodes, vm);
+    if (typeof vm._config.legend === 'function') {
+      vm._config.legend.call(this, vm._nodes);
+    }
+
+    
     return vm
   }
 
