@@ -132,9 +132,18 @@ export default function (config, helper) {
       }
     });
 
+    var LatLng = {
+      lat: 25.5629994, 
+      lon: -100.6405644
+    }
+    if (vm._config.map.topojson.center && vm._config.map.topojson.center.length === 2) {
+      LatLng.lat = vm._config.map.topojson.center[0]
+      LatLng.lon = vm._config.map.topojson.center[1]
+    }
+
     var map = new L.Map(vm._config.bindTo, {
-        center: new L.LatLng(25.5629994, -100.6405644),
-        zoom: 7,
+        center: new L.LatLng(LatLng.lat, LatLng.lon),
+        zoom: vm._config.map.topojson.zoom || 7,
         maxZoom: 10,
         minZoom: 3
       }),
