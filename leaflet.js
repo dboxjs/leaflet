@@ -13,6 +13,9 @@ export default function (config, helper) {
     vm._scales.color = d3.schemeCategory10();
     vm._axes = {};
     vm._data = [];
+
+    vm._scales.color = d3.scaleQuantize().range(["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"
+    ]);
   }
 
   Leaflet.id = function (col) {
@@ -21,9 +24,30 @@ export default function (config, helper) {
     return vm;
   }
 
+  Leaflet.fill = function (col) {
+    var vm = this;
+    vm._config.fill = col;
+    return vm
+  }
+
+  Leaflet.opacity = function (value) {
+    var vm = this;
+    vm._config.opacity = value;
+    return vm;
+  }
+
+  Leaflet.colors = function (colors) {
+    var vm = this;
+    if (colors && Array.isArray(colors)) {
+      vm._scales.color.range(colors);
+    } else if (typeof colors === 'function') {
+      vm._scales.color = colors;
+    }
+    return vm;
+  }
 
   // -------------------------------
-  // Triggered by the chart.js;
+  // Triggered by chart.js;
   Leaflet.data = function (data) {
     var vm = this;
 
@@ -35,8 +59,32 @@ export default function (config, helper) {
     }
 
     vm._data = data;
-    // vm._quantiles = vm._setQuantile(data);
-    // vm._minMax = d3.extent(data, function(d) { return +d[vm._config.color]; })
+    //vm._quantiles = vm._setQuantile(data);
+    vm._minMax = d3.extent(data, function(d) { return +d[vm._config.fill]; })
+
+    vm._scales.color.domain(vm._minMax);
+
+    var objects = vm._config.map.topojson.objects;
+
+    vm._nodes = [];
+    if (Array.isArray(objects)) {
+      for (let idx = 0; idx < objects.length; idx++) {
+        const obj = objects[idx];
+        vm._topojson.objects[obj].geometries.forEach(function (geom) {
+          var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
+          if (found) 
+            geom.properties[vm._config.fill] = found[vm._config.fill];
+          vm._nodes.push(geom);
+        });
+      }
+    } else if (objects) {
+      vm._topojson.objects[objects].geometries.forEach(function (geom) {
+        var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
+        if (found)
+          geom.properties[vm._config.fill] = found[vm._config.fill];
+        vm._nodes.push(geom);
+      });
+    }
 
     // vm._config.map.min = vm._minMax[0];
     // vm._config.map.max = vm._minMax[1];
@@ -75,24 +123,40 @@ export default function (config, helper) {
         var geojson, key;
         if (jsonData.type === 'Topology') {
           if (objects) {
-            geojson = topojson.feature(jsonData, jsonData.objects[objects]);
-            L.GeoJSON.prototype.addData.call(this, geojson);
+            if (Array.isArray(objects)) {
+              for (let idx = 0; idx < objects.length; idx++) {
+                const obj = objects[idx];
+                geojson = topojson.feature(jsonData, jsonData.objects[obj]);
+                L.GeoJSON.prototype.addData.call(this, geojson);
+              }
+            } else {
+              geojson = topojson.feature(jsonData, jsonData.objects[objects]);
+              L.GeoJSON.prototype.addData.call(this, geojson);
+            }
           } else {
             for (key in jsonData.objects) {
               geojson = topojson.feature(jsonData, jsonData.objects[key]);
               L.GeoJSON.prototype.addData.call(this, geojson);
             }
           }
-
         } else {
           L.GeoJSON.prototype.addData.call(this, jsonData);
         }
       }
     });
 
+    var LatLng = {
+      lat: 25.5629994, 
+      lon: -100.6405644
+    }
+    if (vm._config.map.topojson.center && vm._config.map.topojson.center.length === 2) {
+      LatLng.lat = vm._config.map.topojson.center[0]
+      LatLng.lon = vm._config.map.topojson.center[1]
+    }
+
     var map = new L.Map(vm._config.bindTo, {
-        center: new L.LatLng(25.4638367, -99.7625017),
-        zoom: 7,
+        center: new L.LatLng(LatLng.lat, LatLng.lon),
+        zoom: vm._config.map.topojson.zoom || 7,
         maxZoom: 10,
         minZoom: 3
       }),
@@ -111,32 +175,60 @@ export default function (config, helper) {
       topoLayer.eachLayer(handleLayer);
     }
 
+    var tip = d3.tip().html(function(d) {
+      let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
+        d3.format(',.1f')(d.feature.properties[vm._config.fill]) + '</span></div>';
+      console.log(html);
+      return html;
+    })
+    d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
     function handleLayer(layer) {
-      var randomValue = Math.random();
-      var fillColor = vm._scales.color(randomValue).hex();
+      
+      var value = layer.feature.properties[vm._config.fill];
+      if (!value) {
+        // Remove polygons without data
+        /** @todo validate what to do with NA's */
+        d3.select(layer._path).remove();
+      } else {
+        var fillColor = vm._scales.color(value);
 
-      layer.setStyle({
-        fillColor: fillColor,
-        fillOpacity: 1,
-        color: '#555',
-        weight: 1,
-        opacity: .5
-      });
+        layer.setStyle({
+          fillColor: fillColor,
+          fillOpacity: vm._config.opacity || 0.7,
+          color: '#555',
+          weight: 1,
+          opacity: .5
+        });
 
-      layer.on({
-        mouseover: enterLayer,
-        mouseout: leaveLayer
-      });
+        layer.on({
+          mouseover: function() {
+            enterLayer(layer)
+          },
+          mouseout: function() {
+            leaveLayer(layer);
+          }
+        });
+      }
     }
 
-    function enterLayer() {
-
+    function enterLayer(layer) {
+      console.log(layer, d3.select(layer._path));
+      tip.show(layer, d3.select(layer._path).node());
     }
 
-    function leaveLayer() {
-
+    function leaveLayer(layer) {
+      tip.hide(layer);
     }
 
+    /**
+     * Draw Legend
+     */
+    console.log(vm._nodes, vm);
+    if (typeof vm._config.legend === 'function') {
+      vm._config.legend.call(this, vm._nodes);
+    }
+
+    
     return vm
   }
 
