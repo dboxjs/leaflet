@@ -10,7 +10,6 @@ export default function (config, helper) {
     var vm = this;
     vm._config = config ? config : {};
     vm._scales = {};
-    vm._scales.color = d3.schemeCategory10();
     vm._axes = {};
     vm._data = [];
 
