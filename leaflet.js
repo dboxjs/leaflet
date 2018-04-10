@@ -104,6 +104,7 @@ export default function (config, helper) {
 
   Leaflet.colors = function (colors) {
     var vm = this;
+    vm._config.colors = colors;
     if (colors) {
       if (Array.isArray(colors)) {
         vm._scales.color = d3.scaleOrdinal().range(colors);
