@@ -37,6 +37,7 @@ export default function (config, helper) {
 
   Leaflet.colors = function (colors) {
     var vm = this;
+    vm._config.colors = colors;
     if (colors && Array.isArray(colors)) {
       vm._scales.color.range(colors);
     } else if (typeof colors === 'function') {
@@ -44,6 +45,12 @@ export default function (config, helper) {
     }
     return vm;
   }
+
+  Leaflet.colorLegend = function (legendTitle) {
+    var vm = this;
+    vm._config.legendTitle = legendTitle;
+    return vm;
+  };
 
   // -------------------------------
   // Triggered by chart.js;
@@ -106,6 +113,78 @@ export default function (config, helper) {
     }
     return vm;
   }
+
+  Leaflet.drawColorLegend = function () {
+    var vm = this;
+   
+    //Define legend gradient
+    var defs = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').append('defs');
+
+    var linearGradient = defs.append('linearGradient')
+      .attr('id', 'linear-gradient-label');
+
+    //Define direction for gradient. Default is vertical top-bottom.
+    linearGradient
+      .attr('x1', '0%')
+      .attr('y1', '100%')
+      .attr('x2', '0%')
+      .attr('y2', '0%');
+
+    //Define color scheme as linear gradient
+    var colorScale = d3.scaleLinear()
+      .range(vm._config.colors);
+
+    linearGradient.selectAll('stop') 
+      .data(colorScale.range())                  
+      .enter().append('stop')
+      .attr('offset', function(d,i) { return i/(colorScale.range().length-1); })
+      .attr('stop-color', function(d) { return d; });
+
+    //Add gradient legend 
+    //defaults to right position
+    var legend = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated')
+      .append('g')
+      .attr('class', 'legend')
+      .attr('transform', 'translate(' + (vm._config.size.width - 400 ) +',' + vm._config.size.height * .1 + ')');
+
+    //legend title
+    legend.append('text')
+      .attr('x', 0)
+      .attr('class', 'legend-title')
+      .attr('text-anchor', 'start')
+      .text(vm._config.legendTitle);
+
+    //top text is the max value
+    legend.append('text')
+      .attr('x', 0)
+      .attr('y', '1.5em')
+      .attr('class', 'top-label')
+      .attr('text-anchor', 'start')
+      .text(function(){
+        let max = Math.ceil(vm._minMax[0]);
+        return max.toLocaleString();
+      })
+
+    //draw gradient
+    legend.append('rect')
+      .attr('x', 0)
+      .attr('y', '2.3em')
+      .attr('width', 18)
+      .attr('height', vm._config.size.height * 0.6)
+      .attr('fill', 'url(#linear-gradient-label)');
+
+    //bottom text is the min value
+    legend.append('text')
+      .attr('x', 0)
+      .attr('y', vm._config.size.height * 0.6 + 40)
+      .attr('class', 'bottom-label')
+      .attr('text-anchor', 'start')
+      .text(function(){ 
+        let min = Math.floor(Math.min(vm._minMax[1]))
+        return min.toLocaleString();
+      });
+
+  };
 
   Leaflet.draw = function () {
     var vm = this;
@@ -227,81 +306,11 @@ export default function (config, helper) {
       vm._config.legend.call(this, vm._nodes);
     }
 
-    Leaflet.drawColorLegend = function () {
-      var vm = this;
-     
-      //Define legend gradient
-      var defs = vm.chart.svg().append('defs');
-  
-      var linearGradient = defs.append('linearGradient')
-        .attr('id', 'linear-gradient-label');
-  
-      //Define direction for gradient. Default is vertical top-bottom.
-      linearGradient
-        .attr('x1', '0%')
-        .attr('y1', '100%')
-        .attr('x2', '0%')
-        .attr('y2', '0%');
-  
-      //Define color scheme as linear gradient
-      var colorScale = d3.scaleLinear()
-        .range(vm._config.colors);
-  
-      linearGradient.selectAll('stop') 
-        .data(colorScale.range())                  
-        .enter().append('stop')
-        .attr('offset', function(d,i) { return i/(colorScale.range().length-1); })
-        .attr('stop-color', function(d) { return d; });
-  
-      //Add gradient legend 
-      //defaults to right position
-      var legend = vm.chart.svg()
-        .append('g')
-        .attr('class', 'legend')
-        .attr('transform', 'translate(' + (vm._config.size.width - vm._config.size.margin.right + 5) +',' + vm._config.size.height * .1 + ')');
-  
-      //legend title
-      legend.append('text')
-        .attr('x', 0)
-        .attr('class', 'legend-title')
-        .attr('text-anchor', 'start')
-        .text(vm._config.legendTitle);
-  
-      //top text is the max value
-      legend.append('text')
-        .attr('x', 0)
-        .attr('y', '1.5em')
-        .attr('class', 'top-label')
-        .attr('text-anchor', 'start')
-        .text(function(){
-          let max = Math.ceil(Math.max(...vm._config.fillValues));
-          return max.toLocaleString();
-        })
-  
-      //draw gradient
-      legend.append('rect')
-        .attr('x', 0)
-        .attr('y', '2.3em')
-        .attr('width', 18)
-        .attr('height', vm._config.size.height * 0.6)
-        .attr('fill', 'url(#linear-gradient-label)');
-  
-      //bottom text is the min value
-      legend.append('text')
-        .attr('x', 0)
-        .attr('y', vm._config.size.height * 0.6 + 40)
-        .attr('class', 'bottom-label')
-        .attr('text-anchor', 'start')
-        .text(function(){ 
-          let min = Math.floor(Math.min(...vm._config.fillValues))
-          return min.toLocaleString();
-        });
-  
-    };
-
+    Leaflet.drawColorLegend();
     
     return vm
   }
+  
 
   Leaflet.init(config);
 
