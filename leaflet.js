@@ -163,7 +163,7 @@ export default function (config, helper) {
       .attr('class', 'top-label')
       .attr('text-anchor', 'middle')
       .text(function(){
-        let max = Math.ceil(vm._minMax[0]);
+        let max = Math.ceil(vm._minMax[1]);
         return max.toLocaleString();
       })
 
@@ -182,7 +182,7 @@ export default function (config, helper) {
       .attr('class', 'bottom-label')
       .attr('text-anchor', 'middle')
       .text(function(){ 
-        let min = Math.floor(Math.min(vm._minMax[1]))
+        let min = Math.floor(Math.min(vm._minMax[0]))
         return min.toLocaleString();
       });
 
