@@ -164,7 +164,7 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(function(){
         let max = Math.ceil(vm._minMax[1]);
-        return max.toLocaleString();
+        return vm.utils.format(max);
       })
 
     //draw gradient
@@ -183,7 +183,7 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(function(){ 
         let min = Math.floor(Math.min(vm._minMax[0]))
-        return min.toLocaleString();
+        return vm.utils.format(min);
       });
 
   };
