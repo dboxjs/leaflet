@@ -164,6 +164,9 @@ export default function (config, helper) {
       .attr('text-anchor', 'middle')
       .text(function(){
         let max = Math.ceil(vm._minMax[1]);
+        if (vm._config.legendTitle === 'Porcentaje' && max > 100) {
+          max = 100;
+        }
         return vm.utils.format(max);
       })
 
@@ -258,7 +261,6 @@ export default function (config, helper) {
     var tip = d3.tip().html(function(d) {
       let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
         d3.format(',.1f')(d.feature.properties[vm._config.fill]) + '</span></div>';
-      console.log(html);
       return html;
     })
     d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
@@ -292,7 +294,6 @@ export default function (config, helper) {
     }
 
     function enterLayer(layer) {
-      console.log(layer, d3.select(layer._path));
       tip.show(layer, d3.select(layer._path).node());
     }
 
@@ -303,7 +304,6 @@ export default function (config, helper) {
     /**
      * Draw Legend
      */
-    console.log(vm._nodes, vm);
     if (typeof vm._config.legend === 'function') {
       vm._config.legend.call(this, vm._nodes);
     }
