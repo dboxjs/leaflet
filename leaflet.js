@@ -8,7 +8,7 @@ export default function (config, helper) {
   var Leaflet = Object.create(helper);
 
   Leaflet.init = function (config) {
-    var vm = this;
+    const vm = this;
     vm._config = config ? config : {};
     vm._scales = {};
     vm._axes = {};
@@ -103,92 +103,76 @@ export default function (config, helper) {
     return vm
   }
 
-  Leaflet.colors = function (colors) {
-    var vm = this;
-    vm._config.colors = colors;
-    if (colors) {
-      if (Array.isArray(colors)) {
-        vm._scales.color = d3.scaleOrdinal().range(colors);
-      } else if (typeof colors === 'function') {
-        vm._scales.color = colors;
-      }
-    }
-    return vm;
-  }
-
   Leaflet.drawColorLegend = function () {
     var vm = this;
-   
-    //Define legend gradient
-    var defs = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').append('defs');
+    
+    var range = vm._scales.color.range().length;
+    var step = (vm._minMax[1] - vm._minMax[0]) / (range - 1);
+    var domain = vm._config.colors;
 
-    var linearGradient = defs.append('linearGradient')
-      .attr('id', 'linear-gradient-label');
-
-    //Define direction for gradient. Default is vertical top-bottom.
-    linearGradient
-      .attr('x1', '0%')
-      .attr('y1', '100%')
-      .attr('x2', '0%')
-      .attr('y2', '0%');
-
-    //Define color scheme as linear gradient
-    var colorScale = d3.scaleLinear()
-      .range(vm._config.colors);
-
-    linearGradient.selectAll('stop') 
-      .data(colorScale.range())                  
-      .enter().append('stop')
-      .attr('offset', function(d,i) { return i/(colorScale.range().length-1); })
-      .attr('stop-color', function(d) { return d; });
-
+    var quantilePosition = d3.scaleBand().rangeRound([vm._config.size.height * 0.8, 0]).domain(domain);
     //Add gradient legend 
     //defaults to right position
     var legend = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated')
       .append('g')
       .attr('class', 'legend')
       .attr('transform', 'translate(' + (vm._config.size.width - 300 ) +',' + vm._config.size.height * .1 + ')');
-
-    //legend title
+    
+      //legend title
     legend.append('text')
       .attr('x', 0)
+      .attr('y', -12)
       .attr('class', 'legend-title')
       .attr('text-anchor', 'middle')
       .text(vm._config.legendTitle);
 
-    //top text is the max value
-    legend.append('text')
+    console.log(domain);
+
+    var quantiles = legend.selectAll('.quantile')
+      .data(vm._config.colors)
+      .enter()
+      .append('g')
+      .attr('class', 'quantile')
+      .attr('transform', function(d) {
+        return 'translate(-20, ' + quantilePosition(d)
+         + ')';
+      })
+
+    // Rect
+    quantiles.append('rect')
       .attr('x', 0)
-      .attr('y', '1.5em')
+      .attr('y', 0)
+      .attr('width', 18)
+      .attr('height', quantilePosition.bandwidth())
+      .attr('fill', function (d) {
+        return d;
+      });
+    
+
+    //top text is the max value
+    quantiles.append('text')
+      .attr('x', 20)
+      .attr('y', 5)
       .attr('class', 'top-label')
-      .attr('text-anchor', 'middle')
-      .text(function(){
-        let max = Math.ceil(vm._minMax[1]);
+      .attr('text-anchor', 'left')
+      .text(function(d){
+        let max = (vm._scales.color.invertExtent(d)[1]);
         if (vm._config.legendTitle === 'Porcentaje' && max > 100) {
           max = 100;
         }
         return vm.utils.format(max);
-      })
-
-    //draw gradient
-    legend.append('rect')
-      .attr('x', -9)
-      .attr('y', '2.3em')
-      .attr('width', 18)
-      .attr('height', vm._config.size.height * 0.6)
-      .attr('fill', 'url(#linear-gradient-label)');
-
-    //bottom text is the min value
-    legend.append('text')
-      .attr('x', 0)
-      .attr('y', vm._config.size.height * 0.6 + 40)
-      .attr('class', 'bottom-label')
-      .attr('text-anchor', 'middle')
-      .text(function(){ 
-        let min = Math.floor(Math.min(vm._minMax[0]))
-        return vm.utils.format(min);
       });
 
+    //top text is the min value
+    quantiles.append('text')
+      .attr('x', 20)
+      .attr('y', vm._config.size.height / 5 - 11)
+      .attr('class', 'bottom-label')
+      .attr('text-anchor', 'left')
+      .text(function(d){
+        let min = (vm._scales.color.invertExtent(d)[0]);
+        return vm.utils.format(min);
+      });
   };
 
   Leaflet.draw = function () {
@@ -273,7 +257,7 @@ export default function (config, helper) {
         d3.select(layer._path).remove();
       } else {
         var fillColor = vm._scales.color(value);
-
+        
         layer.setStyle({
           fillColor: fillColor,
           fillOpacity: vm._config.opacity || 0.7,
