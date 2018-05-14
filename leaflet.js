@@ -118,7 +118,18 @@ export default function (config, helper) {
       .attr('class', 'legend')
       .attr('transform', 'translate(' + (vm._config.size.width - 300 ) +',' + vm._config.size.height * .1 + ')');
     
-      //legend title
+    // legend background
+    legend.append('rect')
+      .attr('x', -50)
+      .attr('y', -35)
+      .attr('width', 100)
+      .attr('height', vm._config.size.height - 10)
+      .attr('rx', 10)
+      .attr('ry', 10)
+      .attr('class', 'legend-background')
+      .attr('fill', 'rgba(255,255,255,0.6)');
+    
+      // legend title
     legend.append('text')
       .attr('x', 0)
       .attr('y', -12)
@@ -140,7 +151,7 @@ export default function (config, helper) {
 
     // Rect
     quantiles.append('rect')
-      .attr('x', 0)
+      .attr('x', -10)
       .attr('y', 0)
       .attr('width', 18)
       .attr('height', quantilePosition.bandwidth())
@@ -151,7 +162,7 @@ export default function (config, helper) {
 
     //top text is the max value
     quantiles.append('text')
-      .attr('x', 20)
+      .attr('x', 17)
       .attr('y', 5)
       .attr('class', 'top-label')
       .attr('text-anchor', 'left')
@@ -165,7 +176,7 @@ export default function (config, helper) {
 
     //top text is the min value
     quantiles.append('text')
-      .attr('x', 20)
+      .attr('x', 17)
       .attr('y', vm._config.size.height / 5 - 11)
       .attr('class', 'bottom-label')
       .attr('text-anchor', 'left')
