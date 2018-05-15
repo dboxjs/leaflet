@@ -115,7 +115,7 @@ export default function (config, helper) {
     //defaults to right position
     var legend = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated')
       .append('g')
-      .attr('class', 'legend')
+      .attr('class', 'legend quantized')
       .attr('transform', 'translate(' + (vm._config.size.width - 300 ) +',' + vm._config.size.height * .1 + ')');
     
     // legend background
@@ -174,15 +174,19 @@ export default function (config, helper) {
         return vm.utils.format(max);
       });
 
-    //top text is the min value
+    //bottom text is the min value
     quantiles.append('text')
       .attr('x', 17)
       .attr('y', vm._config.size.height / 5 - 11)
       .attr('class', 'bottom-label')
       .attr('text-anchor', 'left')
       .text(function(d){
-        let min = (vm._scales.color.invertExtent(d)[0]);
-        return vm.utils.format(min);
+        if (i === 0) {
+          let min = (vm._scales.color.invertExtent(d)[0]);
+          return vm.utils.format(min);
+        } else {
+          return '';
+        }
       });
   };
 
