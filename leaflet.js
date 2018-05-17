@@ -259,7 +259,6 @@ export default function (config, helper) {
       topoLayer = new L.TopoJSON(),
       $countryName = $('.country-name');
     
-    //map.setMaxBounds(bounds);
     OpenStreetMap_BlackAndWhite.addTo(map);
     addTopoData(vm._topojson)
 
