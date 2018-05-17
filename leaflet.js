@@ -113,10 +113,17 @@ export default function (config, helper) {
     var quantilePosition = d3.scaleBand().rangeRound([vm._config.size.height * 0.8, 0]).domain(domain);
     //Add gradient legend 
     //defaults to right position
-    var legend = d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated')
+    var legend = d3.select('#' + vm._config.bindTo)
+      .append('svg')
+        .attr('width', 100)
+        .attr('height', vm._config.size.height)
+        .style('z-index', 401)
+        .style('position', 'absolute')
+        .style('top', '4px')
+        .style('right', '2px')
       .append('g')
       .attr('class', 'legend quantized')
-      .attr('transform', 'translate(' + (vm._config.size.width - 300 ) +',' + vm._config.size.height * .1 + ')');
+      .attr('transform', 'translate(50,25)');
     
     // legend background
     legend.append('rect')
@@ -180,7 +187,7 @@ export default function (config, helper) {
       .attr('y', vm._config.size.height / 5 - 11)
       .attr('class', 'bottom-label')
       .attr('text-anchor', 'left')
-      .text(function(d){
+      .text(function(d, i){
         if (i === 0) {
           let min = (vm._scales.color.invertExtent(d)[0]);
           return vm.utils.format(min);
@@ -236,18 +243,23 @@ export default function (config, helper) {
       LatLng.lon = vm._config.map.topojson.center[1]
     }
 
+    var bounds = new L.LatLngBounds(new L.LatLng(LatLng.lat + 5, LatLng.lon - 5), new L.LatLng(LatLng.lat - 5, LatLng.lon + 5));
+
     var map = new L.Map(vm._config.bindTo, {
-        center: new L.LatLng(LatLng.lat, LatLng.lon),
+        center: bounds.getCenter(),
         zoom: vm._config.map.topojson.zoom || 7,
-        maxZoom: 10,
-        minZoom: 3
+        maxZoom: vm._config.map.topojson.maxZoom || 10,
+        minZoom: vm._config.map.topojson.minZoom || 3,
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0
       }),
       OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }),
       topoLayer = new L.TopoJSON(),
       $countryName = $('.country-name');
-
+    
+    //map.setMaxBounds(bounds);
     OpenStreetMap_BlackAndWhite.addTo(map);
     addTopoData(vm._topojson)
 
@@ -257,7 +269,7 @@ export default function (config, helper) {
       topoLayer.eachLayer(handleLayer);
     }
 
-    var tip = d3.tip().html(function(d) {
+    var tip = vm.utils.d3.tip().html(function(d) {
       let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
         vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
       return html;
