@@ -256,8 +256,7 @@ export default function (config, helper) {
       OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }),
-      topoLayer = new L.TopoJSON(),
-      $countryName = $('.country-name');
+      topoLayer = new L.TopoJSON();
     
     OpenStreetMap_BlackAndWhite.addTo(map);
     addTopoData(vm._topojson)
