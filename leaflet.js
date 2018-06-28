@@ -61,6 +61,7 @@ export default function (config, helper) {
     vm._topojson = data[1] ? data[1] : false; //Topojson
     data = data[0]; //User data
 
+    console.log(vm._topojson);
     if (vm._config.data.filter) {
       data = data.filter(vm._config.data.filter);
     }
@@ -78,17 +79,21 @@ export default function (config, helper) {
       for (let idx = 0; idx < objects.length; idx++) {
         const obj = objects[idx];
         vm._topojson.objects[obj].geometries.forEach(function (geom) {
-          var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
-          if (found) 
+          geom.id = vm._config.map.topojson.parser(geom);
+          var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0];
+          if (found) {
             geom.properties[vm._config.fill] = found[vm._config.fill];
+          }
           vm._nodes.push(geom);
         });
       }
     } else if (objects) {
       vm._topojson.objects[objects].geometries.forEach(function (geom) {
-        var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0]
-        if (found)
+        geom.id = vm._config.map.topojson.parser(geom);
+        var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0];
+        if (found) {
           geom.properties[vm._config.fill] = found[vm._config.fill];
+        }
         vm._nodes.push(geom);
       });
     }
@@ -267,7 +272,7 @@ export default function (config, helper) {
       topoLayer.eachLayer(handleLayer);
     }
 
-    var tip = vm.utils.d3.tip().html(function(d) {
+    var tip = vm.utils.d3.tip().html(vm._config.tip || function(d) {
       let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
         vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
       return html;
