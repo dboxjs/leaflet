@@ -57,11 +57,9 @@ export default function (config, helper) {
   // Triggered by chart.js;
   Leaflet.data = function (data) {
     var vm = this;
-
     vm._topojson = data[1] ? data[1] : false; //Topojson
     data = data[0]; //User data
 
-    console.log(vm._topojson);
     if (vm._config.data.filter) {
       data = data.filter(vm._config.data.filter);
     }
@@ -120,7 +118,7 @@ export default function (config, helper) {
     //defaults to right position
     var legend = d3.select('#' + vm._config.bindTo)
       .append('svg')
-        .attr('width', 100)
+        .attr('width', 120)
         .attr('height', vm._config.size.height)
         .style('z-index', 401)
         .style('position', 'absolute')
@@ -148,8 +146,6 @@ export default function (config, helper) {
       .attr('class', 'legend-title')
       .attr('text-anchor', 'middle')
       .text(vm._config.legendTitle);
-
-    console.log(domain);
 
     var quantiles = legend.selectAll('.quantile')
       .data(vm._config.colors)
@@ -183,7 +179,11 @@ export default function (config, helper) {
         if (vm._config.legendTitle === 'Porcentaje' && max > 100) {
           max = 100;
         }
-        return vm.utils.format(max);
+        if (vm._config.map.formatLegend) {
+          return vm._config.map.formatLegend(max);
+        } else {
+          return vm.utils.format(max);
+        }
       });
 
     //bottom text is the min value
@@ -195,7 +195,11 @@ export default function (config, helper) {
       .text(function(d, i){
         if (i === 0) {
           let min = (vm._scales.color.invertExtent(d)[0]);
-          return vm.utils.format(min);
+          if (vm._config.map.formatLegend) {
+            return vm._config.map.formatLegend(min);
+          } else {
+            return vm.utils.format(min);
+          }
         } else {
           return '';
         }
