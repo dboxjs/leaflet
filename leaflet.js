@@ -257,11 +257,13 @@ export default function (config, helper) {
         minZoom: vm._config.map.topojson.minZoom || 3,
         maxBounds: bounds,
         maxBoundsViscosity: 1.0
-      }),
-      OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+      });
+    
+    var OpenStreetMap_BlackAndWhite = L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }),
-      topoLayer = new L.TopoJSON();
+      });
+    var topoLayer = new L.TopoJSON();
     
     OpenStreetMap_BlackAndWhite.addTo(vm._map);
     addTopoData(vm._topojson)
