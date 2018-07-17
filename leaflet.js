@@ -254,7 +254,7 @@ export default function (config, helper) {
 
     var bounds = new L.LatLngBounds(new L.LatLng(LatLng.lat + 5, LatLng.lon - 5), new L.LatLng(LatLng.lat - 5, LatLng.lon + 5));
 
-    var map = new L.Map(vm._config.bindTo, {
+    vm._map = new L.Map(vm._config.bindTo, {
         center: bounds.getCenter(),
         zoom: vm._config.map.topojson.zoom || 7,
         maxZoom: vm._config.map.topojson.maxZoom || 10,
@@ -267,12 +267,12 @@ export default function (config, helper) {
       }),
       topoLayer = new L.TopoJSON();
     
-    OpenStreetMap_BlackAndWhite.addTo(map);
+    OpenStreetMap_BlackAndWhite.addTo(vm._map);
     addTopoData(vm._topojson)
 
     function addTopoData(topoData) {
       topoLayer.addData(topoData);
-      topoLayer.addTo(map);
+      topoLayer.addTo(vm._map);
       topoLayer.eachLayer(handleLayer);
     }
 
