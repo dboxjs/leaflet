@@ -277,11 +277,12 @@ export default function (config, helper) {
       topoLayer.eachLayer(handleLayer);
     }
 
-    var tip = vm.utils.d3.tip().html(vm._config.tip.bind(this) || function(d) {
+    var tip = vm.utils.d3.tip().html(vm._config.tip ? vm._config.tip.bind(this) : function(d) {
       let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
         vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
       return html;
     });
+    debugger;
     d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
     function handleLayer(layer) {
       
