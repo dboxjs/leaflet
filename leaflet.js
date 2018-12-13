@@ -282,7 +282,7 @@ export default function (config, helper) {
         vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
       return html;
     });
-    debugger;
+    
     d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
     function handleLayer(layer) {
       
