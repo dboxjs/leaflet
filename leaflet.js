@@ -277,15 +277,19 @@ export default function (config, helper) {
       topoLayer.eachLayer(handleLayer);
     }
 
-    var tip = vm.utils.d3.tip().html(vm._config.tip ? vm._config.tip.bind(this) : function(d) {
-      let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
-        vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
-      return html;
-    });
-    
+    var tip = vm.utils.d3.tip()
+      .html(vm._config.tip ? vm._config.tip.bind(this) : function(d) {
+        let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
+          vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
+        return html;
+      });
     d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
+
+    /**
+     * Set each layer
+     * @param {obj} layer 
+     */
     function handleLayer(layer) {
-      
       var value = layer.feature.properties[vm._config.fill];
       if (!value) {
         // Remove polygons without data
@@ -301,6 +305,8 @@ export default function (config, helper) {
           weight: 1,
           opacity: .5
         });
+
+        vm.drawLabel(layer);
 
         layer.on({
           mouseover: function() {
@@ -329,8 +335,28 @@ export default function (config, helper) {
     }
 
     Leaflet.drawColorLegend();
-    
+
     return vm
+  }
+
+  /**
+   * Add labels for each path (layer) to display value
+   */
+  Leaflet.drawLabel = function(layer) {
+    const vm = this;
+    const props = layer.feature.properties;
+    const path = d3.select(layer._path).node();
+    const bbox = path.getBBox();
+    var svg = d3.select('#' + vm._config.bindTo)
+      .select('svg.leaflet-zoom-animated');
+    
+    svg.append('text')
+      .attr('class', 'dbox-label')
+      .attr('x', bbox.x + (bbox.width / 2))
+      .attr('y', bbox.y + (bbox.height / 2))
+      .attr('text-anchor', 'middle')
+      .text(vm.utils.format(props[vm._config.fill]));
+    return vm;
   }
   
 
