@@ -269,7 +269,16 @@ export default function (config, helper) {
     var topoLayer = new L.TopoJSON();
     
     mapTiles.addTo(vm._map);
-    addTopoData(vm._topojson)
+    addTopoData(vm._topojson);
+
+    vm._map.on('zoomend', function() {
+      d3.selectAll('.dbox-label').remove();
+      Object.values(vm._map._layers)
+        .filter(obj => obj.feature)
+        .forEach(function(layer) {
+        vm.drawLabel(layer);
+      });
+    });
 
     function addTopoData(topoData) {
       topoLayer.addData(topoData);
@@ -350,12 +359,14 @@ export default function (config, helper) {
     var svg = d3.select('#' + vm._config.bindTo)
       .select('svg.leaflet-zoom-animated');
     
-    svg.append('text')
-      .attr('class', 'dbox-label')
-      .attr('x', bbox.x + (bbox.width / 2))
-      .attr('y', bbox.y + (bbox.height / 2))
-      .attr('text-anchor', 'middle')
-      .text(vm.utils.format(props[vm._config.fill]));
+    if (props[vm._config.fill] !== undefined) {
+      svg.append('text')
+        .attr('class', 'dbox-label')
+        .attr('x', bbox.x + (bbox.width / 2))
+        .attr('y', bbox.y + (d3.min([bbox.height / 2, 30])))
+        .attr('text-anchor', 'middle')
+        .text((props.NOM_ENT || props.NOM_MUN) + ': ' + vm.utils.format(props[vm._config.fill]));
+    }
     return vm;
   }
   
