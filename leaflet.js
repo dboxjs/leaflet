@@ -271,14 +271,14 @@ export default function (config, helper) {
     mapTiles.addTo(vm._map);
     addTopoData(vm._topojson);
 
-    vm._map.on('zoomend', function() {
-      d3.selectAll('.dbox-label').remove();
-      Object.values(vm._map._layers)
-        .filter(obj => obj.feature)
-        .forEach(function(layer) {
-        vm.drawLabel(layer);
-      });
-    });
+    // vm._map.on('zoomend', function() {
+    //   d3.selectAll('.dbox-label').remove();
+    //   Object.values(vm._map._layers)
+    //     .filter(obj => obj.feature)
+    //     .forEach(function(layer) {
+    //     vm.drawLabel(layer);
+    //   });
+    // });
 
     function addTopoData(topoData) {
       topoLayer.addData(topoData);
