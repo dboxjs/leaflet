@@ -289,7 +289,7 @@ export default function (config, helper) {
     var tip = vm.utils.d3.tip()
       .html(vm._config.tip ? vm._config.tip.bind(this) : function(d) {
         let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
-          vm.utils.format(d.feature.properties[vm._config.fill]) + '</span></div>';
+          vm.utils.format()(d.feature.properties[vm._config.fill]) + '</span></div>';
         return html;
       });
     d3.select('#' + vm._config.bindTo).select('svg.leaflet-zoom-animated').call(tip);
