@@ -14,8 +14,7 @@ export default function (config, helper) {
     vm._axes = {};
     vm._data = [];
 
-    vm._scales.color = d3.scaleQuantize().range(["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"
-    ]);
+    vm._scales.color = d3.scaleQuantize().range(["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"]);
   }
 
   Leaflet.id = function (col) {
@@ -66,7 +65,9 @@ export default function (config, helper) {
 
     vm._data = data;
     //vm._quantiles = vm._setQuantile(data);
-    vm._minMax = d3.extent(data, function(d) { return +d[vm._config.fill]; })
+    vm._minMax = d3.extent(data, function (d) {
+      return +d[vm._config.fill];
+    })
 
     vm._scales.color.domain(vm._minMax);
 
@@ -78,7 +79,7 @@ export default function (config, helper) {
         const obj = objects[idx];
         vm._topojson.objects[obj].geometries.forEach(function (geom) {
           geom.id = vm._config.map.topojson.parser(geom);
-          var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0];
+          var found = vm._data.filter(o => o[vm._config.id] === geom.id)[0];
           if (found) {
             geom.properties[vm._config.fill] = found[vm._config.fill];
           }
@@ -88,7 +89,7 @@ export default function (config, helper) {
     } else if (objects) {
       vm._topojson.objects[objects].geometries.forEach(function (geom) {
         geom.id = vm._config.map.topojson.parser(geom);
-        var found = vm._data.filter(o => o[vm._config.id] == geom.id)[0];
+        var found = vm._data.filter(o => o[vm._config.id] === geom.id)[0];
         if (found) {
           geom.properties[vm._config.fill] = found[vm._config.fill];
         }
@@ -108,7 +109,7 @@ export default function (config, helper) {
 
   Leaflet.drawColorLegend = function () {
     var vm = this;
-    
+
     var range = vm._scales.color.range().length;
     var step = (vm._minMax[1] - vm._minMax[0]) / (range - 1);
     var domain = vm._config.colors;
@@ -118,16 +119,16 @@ export default function (config, helper) {
     //defaults to right position
     var legend = d3.select('#' + vm._config.bindTo)
       .append('svg')
-        .attr('width', 120)
-        .attr('height', vm._config.size.height)
-        .style('z-index', 401)
-        .style('position', 'absolute')
-        .style('top', '4px')
-        .style('right', '2px')
+      .attr('width', 120)
+      .attr('height', vm._config.size.height)
+      .style('z-index', 401)
+      .style('position', 'absolute')
+      .style('top', '4px')
+      .style('right', '2px')
       .append('g')
       .attr('class', 'legend quantized')
       .attr('transform', 'translate(50,25)');
-    
+
     // legend background
     legend.append('rect')
       .attr('x', -50)
@@ -138,8 +139,8 @@ export default function (config, helper) {
       .attr('ry', 10)
       .attr('class', 'legend-background')
       .attr('fill', 'rgba(255,255,255,0.6)');
-    
-      // legend title
+
+    // legend title
     legend.append('text')
       .attr('x', 0)
       .attr('y', -12)
@@ -152,9 +153,9 @@ export default function (config, helper) {
       .enter()
       .append('g')
       .attr('class', 'quantile')
-      .attr('transform', function(d) {
-        return 'translate(-20, ' + quantilePosition(d)
-         + ')';
+      .attr('transform', function (d) {
+        return 'translate(-20, ' + quantilePosition(d) +
+          ')';
       })
 
     // Rect
@@ -166,7 +167,7 @@ export default function (config, helper) {
       .attr('fill', function (d) {
         return d;
       });
-    
+
 
     //top text is the max value
     quantiles.append('text')
@@ -174,7 +175,7 @@ export default function (config, helper) {
       .attr('y', 5)
       .attr('class', 'top-label')
       .attr('text-anchor', 'left')
-      .text(function(d){
+      .text(function (d) {
         let max = (vm._scales.color.invertExtent(d)[1]);
         if (vm._config.legendTitle === 'Porcentaje' && max > 100) {
           max = 100;
@@ -192,7 +193,7 @@ export default function (config, helper) {
       .attr('y', vm._config.size.height / 5 - 11)
       .attr('class', 'bottom-label')
       .attr('text-anchor', 'left')
-      .text(function(d, i){
+      .text(function (d, i) {
         if (i === 0) {
           let min = (vm._scales.color.invertExtent(d)[0]);
           if (vm._config.map.formatLegend) {
@@ -244,7 +245,7 @@ export default function (config, helper) {
     });
 
     var LatLng = {
-      lat: 25.5629994, 
+      lat: 25.5629994,
       lon: -100.6405644
     }
     if (vm._config.map.topojson.center && vm._config.map.topojson.center.length === 2) {
@@ -255,19 +256,19 @@ export default function (config, helper) {
     var bounds = new L.LatLngBounds(new L.LatLng(LatLng.lat + 5, LatLng.lon - 5), new L.LatLng(LatLng.lat - 5, LatLng.lon + 5));
 
     vm._map = new L.Map(vm._config.bindTo, {
-        center: bounds.getCenter(),
-        zoom: vm._config.map.topojson.zoom || 7,
-        maxZoom: vm._config.map.topojson.maxZoom || 10,
-        minZoom: vm._config.map.topojson.minZoom || 3,
-        maxBounds: bounds,
-        maxBoundsViscosity: 1.0
-      });
+      center: bounds.getCenter(),
+      zoom: vm._config.map.topojson.zoom || 7,
+      maxZoom: vm._config.map.topojson.maxZoom || 10,
+      minZoom: vm._config.map.topojson.minZoom || 3,
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0
+    });
 
     var mapTiles = L.tileLayer('http://b.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      });
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
     var topoLayer = new L.TopoJSON();
-    
+
     mapTiles.addTo(vm._map);
     addTopoData(vm._topojson);
 
@@ -287,7 +288,7 @@ export default function (config, helper) {
     }
 
     var tip = vm.utils.d3.tip()
-      .html(vm._config.tip ? vm._config.tip.bind(this) : function(d) {
+      .html(vm._config.tip ? vm._config.tip.bind(this) : function (d) {
         let html = '<div class="d3-tip" style="z-index: 99999;"><span>' + (d.feature.properties.NOM_ENT || d.feature.properties.NOM_MUN) + '</span><br/><span>' +
           vm.utils.format()(d.feature.properties[vm._config.fill]) + '</span></div>';
         return html;
@@ -306,10 +307,10 @@ export default function (config, helper) {
         d3.select(layer._path).remove();
       } else {
         var fillColor = vm._scales.color(value);
-        
+
         layer.setStyle({
           fillColor: fillColor,
-          fillOpacity: vm._config.opacity || 0.7,
+          fillOpacity: vm._config.opacity || 0.7,
           color: '#555',
           weight: 1,
           opacity: .5
@@ -318,10 +319,10 @@ export default function (config, helper) {
         vm.drawLabel(layer);
 
         layer.on({
-          mouseover: function() {
+          mouseover: function () {
             enterLayer(layer)
           },
-          mouseout: function() {
+          mouseout: function () {
             leaveLayer(layer);
           }
         });
@@ -351,25 +352,25 @@ export default function (config, helper) {
   /**
    * Add labels for each path (layer) to display value
    */
-  Leaflet.drawLabel = function(layer) {
+  Leaflet.drawLabel = function (layer) {
     const vm = this;
     const props = layer.feature.properties;
     const path = d3.select(layer._path).node();
     const bbox = path.getBBox();
     var svg = d3.select('#' + vm._config.bindTo)
       .select('svg.leaflet-zoom-animated');
-    
+
     if (props[vm._config.fill] !== undefined) {
       svg.append('text')
         .attr('class', 'dbox-label')
         .attr('x', bbox.x + (bbox.width / 2))
         .attr('y', bbox.y + (d3.min([bbox.height / 2, 30])))
         .attr('text-anchor', 'middle')
-        .text((props.NOM_ENT || props.NOM_MUN) + ': ' + vm.utils.format(props[vm._config.fill]));
+        .text((props.NOM_ENT || props.NOM_MUN) + ': ' + vm.utils.format(props[vm._config.fill]));
     }
     return vm;
   }
-  
+
 
   Leaflet.init(config);
 
