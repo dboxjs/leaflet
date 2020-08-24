@@ -3,6 +3,7 @@ var L = require('leaflet');
 import * as topojson from 'topojson';
 /**
  * Leaflet Chart
+ * Creates a map using Leaflet.js
  */
 
 export default function (config, helper) {
