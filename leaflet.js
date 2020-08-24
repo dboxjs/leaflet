@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import * as L from 'leaflet';
+var L = require('leaflet');
 import * as topojson from 'topojson';
 /**
  * Leaflet Chart
