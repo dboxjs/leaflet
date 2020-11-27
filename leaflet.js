@@ -194,7 +194,7 @@ export default function (config, helper) {
         if (vm._config.map.formatLegend) {
           return vm._config.map.formatLegend(max);
         } else {
-          return vm.utils.format(max);
+          return vm.utils.format()(max);
         }
       });
 
@@ -211,7 +211,7 @@ export default function (config, helper) {
           if (vm._config.map.formatLegend) {
             return vm._config.map.formatLegend(min);
           } else {
-            return vm.utils.format(min);
+            return vm.utils.format()(min);
           }
         } else {
           return '';
@@ -400,9 +400,12 @@ export default function (config, helper) {
         .attr('y', bbox.y + d3.min([bbox.height / 2, 30]))
         .attr('text-anchor', 'middle')
         .text(
-          (props.NOM_ENT || props.NOM_MUN) +
-            ': ' +
-            vm.utils.format(props[vm._config.fill])
+          `${
+            props[vm._config.poly_name]
+              ? props[vm._config.poly_name] + ': '
+              : ''
+          }
+          ${vm.utils.format()(props[vm._config.fill])}`
         );
     }
     return vm;
